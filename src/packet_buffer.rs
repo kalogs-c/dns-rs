@@ -28,7 +28,7 @@ impl PacketBuffer {
     }
 
     // Read byte value and increment position
-    fn read_byte(&mut self) -> Result<u8, PacketError> {
+    pub fn read_byte(&mut self) -> Result<u8, PacketError> {
         if self.position >= self.buffer.len() {
             return Err(PacketError::BufferSizeExceeded(self.position));
         }
@@ -59,7 +59,7 @@ impl PacketBuffer {
         Ok(slice)
     }
 
-    fn read_u16(&mut self) -> Result<u16, PacketError> {
+    pub fn read_u16(&mut self) -> Result<u16, PacketError> {
         let read = ((self.read_byte()? as u16) << 8) | (self.read_byte()? as u16);
         Ok(read)
     }
