@@ -30,7 +30,7 @@ impl PacketBuffer {
         Ok(())
     }
 
-    fn walk(&mut self, steps: usize) {
+    pub fn walk(&mut self, steps: usize) {
         self.position += steps;
     }
 
@@ -75,7 +75,7 @@ impl PacketBuffer {
         Ok(read)
     }
 
-    fn read_u32(&mut self) -> Result<u32, PacketError> {
+    pub fn read_u32(&mut self) -> Result<u32, PacketError> {
         let read = ((self.read_byte()? as u32) << 24)
             | ((self.read_byte()? as u32) << 16)
             | ((self.read_byte()? as u32) << 8)
