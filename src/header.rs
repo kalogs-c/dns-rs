@@ -23,6 +23,7 @@ impl ResponseCode {
     }
 }
 
+#[derive(Debug)]
 pub struct Header {
     pub id: u16,
     pub query_response: bool,
@@ -42,7 +43,7 @@ pub struct Header {
 }
 
 impl Header {
-    fn new() -> Header {
+    pub fn new() -> Header {
         Header {
             id: 0,
             query_response: false,

@@ -2,6 +2,7 @@ use crate::packet_buffer::{PacketBuffer, PacketError};
 use crate::question::QueryType;
 use std::net::Ipv4Addr;
 
+#[derive(Debug)]
 pub enum Record {
     Unknown {
         domain: String,
@@ -44,7 +45,7 @@ impl Record {
             }
             QueryType::Unknown(_) => {
                 buffer.walk(data_length as usize);
-                
+
                 Record::Unknown {
                     domain,
                     query_type: query_type_u16,

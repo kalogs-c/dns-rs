@@ -7,7 +7,7 @@ pub enum PacketError {
 }
 
 pub struct PacketBuffer {
-    buffer: [u8; 512],
+    pub buffer: [u8; 512],
     position: usize,
 }
 

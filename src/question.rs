@@ -1,5 +1,6 @@
 use crate::packet_buffer::{PacketBuffer, PacketError};
 
+#[derive(Debug)]
 pub enum QueryType {
     Unknown(u16),
     A,
@@ -21,6 +22,7 @@ impl QueryType {
     }
 }
 
+#[derive(Debug)]
 pub struct Question {
     pub name: String,
     pub query_type: QueryType,
