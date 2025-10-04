@@ -1,5 +1,6 @@
 use crate::packet_buffer::{PacketBuffer, PacketError};
 
+#[derive(Debug, PartialEq)]
 pub enum ResponseCode {
     NOERROR = 0,
     FORMERR = 1,
@@ -17,7 +18,7 @@ impl ResponseCode {
             3 => ResponseCode::NXDOMAIN,
             4 => ResponseCode::NOTIMPLEMENTED,
             5 => ResponseCode::REFUSED,
-            0 | _ => ResponseCode::FORMERR,
+            0 | _ => ResponseCode::NOERROR,
         }
     }
 }
@@ -30,11 +31,13 @@ pub struct Header {
     pub truncated_message: bool,
     pub recursion_desired: bool,
     pub recursion_available: bool,
-    pub reserved: bool,
+    pub checking_disabled: bool,
+    pub authed_data: bool,
+    pub z: bool,
     pub response_code: ResponseCode,
     pub questions: u16,
     pub answers: u16,
-    pub authoritive_entries: u16,
+    pub authoritative_entries: u16,
     pub resource_entries: u16,
 }
 
@@ -48,11 +51,13 @@ impl Header {
             truncated_message: false,
             recursion_desired: false,
             recursion_available: false,
-            reserved: false,
+            checking_disabled: false,
+            authed_data: false,
+            z: false,
             response_code: ResponseCode::NOERROR,
             questions: 0,
             answers: 0,
-            authoritive_entries: 0,
+            authoritative_entries: 0,
             resource_entries: 0,
         }
     }
@@ -70,14 +75,45 @@ impl Header {
 
         let last_flags = buffer.read_byte()?;
         header.recursion_available = (last_flags & 0b1000_0000) > 0;
-        header.reserved = (last_flags & 0b0111_0000) > 0;
+        header.checking_disabled = (last_flags & 0b0100_0000) > 0;
+        header.authed_data = (last_flags & 0b0010_0000) > 0;
+        header.z = (last_flags & 0b0001_0000) > 0;
         header.response_code = ResponseCode::from_byte(last_flags & 0b0000_1111);
 
         header.questions = buffer.read_u16()?;
         header.answers = buffer.read_u16()?;
-        header.authoritive_entries = buffer.read_u16()?;
+        header.authoritative_entries = buffer.read_u16()?;
         header.resource_entries = buffer.read_u16()?;
 
         Ok(header)
     }
+}
+
+#[test]
+fn test_header_from_buffer_basic() {
+    let data = vec![
+        0x1A, 0x2B, 0x85, 0x80, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+    ];
+
+    let mut buffer = PacketBuffer::new();
+    buffer.write(&data).unwrap();
+    buffer.seek(0);
+
+    let header = Header::from_buffer(&mut buffer).expect("Header parsing failed");
+
+    assert_eq!(header.id, 0x1A2B);
+    assert!(header.query_response);
+    assert_eq!(header.operation_code, 0);
+    assert!(header.authoritative_answer);
+    assert!(!header.truncated_message);
+    assert!(header.recursion_desired);
+    assert!(header.recursion_available);
+    assert!(!header.checking_disabled);
+    assert!(!header.authed_data);
+    assert!(!header.z);
+    assert_eq!(header.response_code, ResponseCode::NOERROR);
+    assert_eq!(header.questions, 1);
+    assert_eq!(header.answers, 1);
+    assert_eq!(header.authoritative_entries, 0);
+    assert_eq!(header.resource_entries, 0);
 }

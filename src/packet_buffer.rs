@@ -19,11 +19,22 @@ impl PacketBuffer {
         }
     }
 
+    pub fn write(&mut self, data: &[u8]) -> Result<(), PacketError> {
+        if self.position + data.len() > self.buffer.len() {
+            return Err(PacketError::BufferSizeExceeded(data.len()));
+        }
+
+        self.buffer[self.position..self.position + data.len()].copy_from_slice(data);
+        self.position += data.len();
+
+        Ok(())
+    }
+
     fn walk(&mut self, steps: usize) {
         self.position += steps;
     }
 
-    fn seek(&mut self, offset: usize) {
+    pub fn seek(&mut self, offset: usize) {
         self.position = offset;
     }
 
