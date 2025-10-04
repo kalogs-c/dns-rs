@@ -84,7 +84,7 @@ impl PacketBuffer {
         Ok(read)
     }
 
-    fn qname(&mut self) -> Result<String, PacketError> {
+    pub fn qname(&mut self) -> Result<String, PacketError> {
         let mut labels: Vec<String> = Vec::new();
         let mut position = self.position;
 
